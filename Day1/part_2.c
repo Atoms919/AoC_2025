@@ -4,7 +4,7 @@
 #include <limits.h>
 
 int main() {
-    FILE *file = fopen("input_1.txt", "r");
+    FILE *file = fopen("input.txt", "r");
     if (!file) {
         perror("Error opening input.txt");
         return 1;
