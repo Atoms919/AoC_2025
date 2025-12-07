@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 void afficher(long long **lines, int line_count, int line_length) {
     for (int i = 0; i < line_count; i++) {
@@ -44,6 +45,8 @@ int main() {
         return 1;
     }
 
+    clock_t start_time = clock();
+
     char line[1024];
     long long **lines = NULL;
     int line_count = 0;
@@ -79,6 +82,10 @@ int main() {
     long long result = day7(lines, line_count, line_length);
     //afficher(lines, line_count, line_length);
     printf("%lld\n", result);
+
+    clock_t end_time = clock();
+    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("Time taken: %f seconds\n", time_spent);
 
     for (int i = 0; i < line_count; i++) {
         free(lines[i]);
