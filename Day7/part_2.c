@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
+#include <windows.h>
 
 void afficher(long long **lines, int line_count, int line_length) {
     for (int i = 0; i < line_count; i++) {
@@ -45,7 +45,9 @@ int main() {
         return 1;
     }
 
-    clock_t start_time = clock();
+    LARGE_INTEGER frequency, start_time, end_time;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&start_time);
 
     char line[1024];
     long long **lines = NULL;
@@ -83,9 +85,9 @@ int main() {
     //afficher(lines, line_count, line_length);
     printf("%lld\n", result);
 
-    clock_t end_time = clock();
-    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-    printf("Time taken: %f seconds\n", time_spent);
+    QueryPerformanceCounter(&end_time);
+    double time_spent = (double)(end_time.QuadPart - start_time.QuadPart) / frequency.QuadPart;
+    printf("Time taken: %.6f seconds\n", time_spent);
 
     for (int i = 0; i < line_count; i++) {
         free(lines[i]);
