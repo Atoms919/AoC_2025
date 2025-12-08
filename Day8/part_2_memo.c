@@ -40,7 +40,6 @@ DistancePair pop() {
     DistancePair top = {-1, -1, FLT_MAX};
     if (memo_size > 0) {
         top = memo[memo_size - 1];
-        memo_size--;
     }
     return top;
 }
@@ -222,7 +221,6 @@ long long day8(Position **positions, int position_count) {
 
     long long sum = (long long)positions[index0]->x * (long long)positions[index1]->x;
     
-    printf("Freeing tab\n");
     for (int i = 0; i <= col; i++) {
         if (tab[i] != NULL) {
             free(tab[i]);
@@ -232,22 +230,15 @@ long long day8(Position **positions, int position_count) {
     free(tab);
     tab = NULL;
 
-    printf("Freeing dist_matrix\n");
     for (int i = 0; i < position_count; i++) {
         if (dist_matrix[i] != NULL) {
             free(dist_matrix[i]);
             dist_matrix[i] = NULL;
         }
     }
-    printf("Freeing dist_matrix pointer\n");
-    if (dist_matrix == NULL) {
-        printf("Dist_matrix pointer is already NULL\n");
-    }
     free(dist_matrix);
-    printf("Dist_matrix pointer freed\n");
     dist_matrix = NULL;
 
-    printf("Freeing row\n");
     free(row);
     row = NULL;
     
@@ -300,20 +291,14 @@ int main() {
     double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("Execution time: %.6f seconds\n", time_taken);
 
-    printf("Freeing positions\n");
     for (int i = 0; i < line_count; i++) {
         free(positions[i]);
         positions[i] = NULL;
     }
-    printf("Freeing positions pointer\n");
     free(positions);
     positions = NULL;
     fclose(file);
-    printf("Freeing memo\n");
     free_memo();
-    printf("Memo freed\n");
-
-    printf("Total : %lld\n", sum);
     return 0;
 }
 
