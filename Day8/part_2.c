@@ -14,39 +14,19 @@ typedef struct {
     int index;
 } Position; 
 
-typedef struct {
-    int index_a;
-    int index_b;
-} IndexPair;
-
-void order_positions_by_distance(Position **positions, int position_count) {
-    for (int i = 0; i < position_count - 1; i++) {
-        for (int j = 0; j < position_count - i - 1; j++) {
-            if (positions[j]->distance_min > positions[j + 1]->distance_min) {
-                Position *temp = positions[j];
-                positions[j] = positions[j + 1];
-                positions[j + 1] = temp;
-            }
-        }
-    }
-}
-
-IndexPair min_distance(float** dist_matrix, int position_count) {
+void min_distance(float** dist_matrix, int position_count, int* index_a, int* index_b) {
     float min_dist = FLT_MAX;
-    int index_a = -1;
-    int index_b = -1;
-
+    *index_a = -1;
+    *index_b = -1;
     for (int i = 0; i < position_count; i++) {
-        for (int j = 0; j < position_count; j++) {
+        for (int j = 0; j < i; j++) {
             if (i != j && dist_matrix[i][j] < min_dist) {
                 min_dist = dist_matrix[i][j];
-                index_a = i;
-                index_b = j;
+                *index_a = i;
+                *index_b = j;
             }
         }
     }
-    IndexPair result = {index_a, index_b};
-    return result;
 }
 
 float** all_distances(Position **pos, int position_count) {
@@ -112,14 +92,8 @@ long long day8(Position **positions, int position_count) {
     int count = 0;
     int tot_grouped = 0;
     while (tot_grouped < position_count || col != 1) {        
-        //printf("Iteration %d\n", count);
-        
         count++;
-        IndexPair pair = min_distance(dist_matrix, position_count);
-        index0 = pair.index_a;
-        index1 = pair.index_b;
-
-        //printf("Distance between %d and %d: %f\n", index0, index1, dist_matrix[index0][index1]);
+        min_distance(dist_matrix, position_count, &index0, &index1);
 
         dist_matrix[index0][index1] = FLT_MAX;
         dist_matrix[index1][index0] = FLT_MAX;
@@ -128,7 +102,6 @@ long long day8(Position **positions, int position_count) {
         index_col1 = findIndex(tab, col, row, positions[index1]->index);
 
         if (index_col0 == -1 && index_col1 == -1) {
-            //printf("Creating new group for (%d, %d)\n", index0, index1);
             tab[col][row[col]] = index0;
             row[col]++;
             tab[col][row[col]] = index1;
@@ -141,19 +114,15 @@ long long day8(Position **positions, int position_count) {
             row = realloc(row, (col + 1) * sizeof(int));
             row[col] = 0;
         } else if (index_col0 != -1 && index_col1 == -1) {
-            //printf("Adding (1) %d to group %d\n", index1, index_col0);
             tab[index_col0] = realloc(tab[index_col0], (row[index_col0] + 1) * sizeof(int));
             tab[index_col0][row[index_col0]] = index1;
             row[index_col0]++;
         } else if (index_col0 == -1 && index_col1 != -1) {
-            //printf("Adding (2) %d to group %d\n", index0, index_col1);
             tab[index_col1] = realloc(tab[index_col1], (row[index_col1] + 1) * sizeof(int));
             tab[index_col1][row[index_col1]] = index0;
             row[index_col1]++;
         } 
         else if (index_col0 != index_col1) {
-            //printf("Merging groups %d and %d\n", index_col0, index_col1);
-            
             if (index_col0 > index_col1) {
                 int temp = index_col0;
                 index_col0 = index_col1;
@@ -161,17 +130,12 @@ long long day8(Position **positions, int position_count) {
             }
             
             tab[index_col0] = realloc(tab[index_col0], (row[index_col0] + row[index_col1]) * sizeof(int));
-            //Merge columns
+            
             for (int j = 0; j < row[index_col1]; j++) {
                 tab[index_col0][row[index_col0]] = tab[index_col1][j];
                 row[index_col0]++;
             }
             
-            //printf("group %d being freed (Ptr: %p): ", index_col1, (void*)tab[index_col1]);
-            for (int j = 0; j < row[index_col1]; j++) {
-                //printf("%d ", tab[index_col1][j]);
-            }
-            //printf("\n");
             free(tab[index_col1]);
 
             for (int j = index_col1; j < col - 1; j++) {
@@ -187,29 +151,17 @@ long long day8(Position **positions, int position_count) {
             tab[col] = (int*)malloc(2*sizeof(int));
             row = realloc(row, (col + 1) * sizeof(int));
             row[col] = 0;
-        }
-        else {
-            // Both indices are already in the same group; do nothing
-            //printf("Both indices are already in the same group; no action taken.\n");
-        }      
+        }    
         tot_grouped = 0;  
         for (int i = 0; i < col; i++) {
             tot_grouped += row[i];
         }
-        //printf("Total grouped positions: %d/%d\n", tot_grouped, position_count);
     }
 
-    //printf("Last changes %d and %d\n", index0, index1);
     long long sum = (long long)positions[index0]->x * (long long)positions[index1]->x;
     
-    //printf("Final groups:\n");
     for (int i = 0; i < col; i++) {
-        //printf("Group %d (Ptr: %p): ", i, (void*)tab[i]);
-        for (int j = 0; j < row[i]; j++) {
-            //printf("%d ", tab[i][j]);
-        }
         free(tab[i]);
-        //printf("\t(%d members)\n", row[i]);
     }
 
     free(tab);
