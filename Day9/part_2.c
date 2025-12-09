@@ -115,10 +115,6 @@ int is_horizontal_edge_inside_polygon(Position cornerA, Position cornerB, char *
 
     long dist_xB_max = max - xB;
 
-    if (!is_point_in_polygon(cornerA, polygon) || !is_point_in_polygon(cornerB, polygon)) {
-        return 0;
-    }
-
     int count_edges = 0;
     int count_corners = 0;
     char previous_char = 'X';
@@ -149,10 +145,6 @@ int is_vertical_edge_inside_polygon(Position cornerA, Position cornerB, char **p
         yB = cornerA.y;
     }
 
-    if (!is_point_in_polygon(cornerA, polygon) || !is_point_in_polygon(cornerB, polygon)) {
-        return 0;
-    }
-
     long dist_yB_max = max - yB;
 
     int count_edges = 0;
@@ -174,6 +166,10 @@ int is_vertical_edge_inside_polygon(Position cornerA, Position cornerB, char **p
 int is_rectangle_inside_polygon(Position cornerA, Position cornerB, char **polygon) {
     Position cornerC = {cornerA.x, cornerB.y};
     Position cornerD = {cornerB.x, cornerA.y};
+
+    if (!is_point_in_polygon(cornerC, polygon) || !is_point_in_polygon(cornerD, polygon)) {
+        return 0;
+    }
 
     if(!is_vertical_edge_inside_polygon(cornerB, cornerD, polygon)) return 0;
     if(!is_vertical_edge_inside_polygon(cornerC, cornerA, polygon)) return 0;
