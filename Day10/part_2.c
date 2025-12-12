@@ -58,42 +58,58 @@ int goal_achieved(char *lights, char *goal) {
     return 1;
 }
 
+int solution_exists(int **all_solutions, int solution_count, int *current_solution) {
+    for (int i = 0; i < solution_count; i++) {
+        int match = 1;
+        for (int j = 0; j < max_number_of_buttons; j++) {
+            if (all_solutions[i][j] != current_solution[j]) {
+                match = 0;
+                break;
+            }
+        }
+        if (match) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void part_1(char *lights, char *goal, short **buttons, int button_index, int *current_solution, int ***all_solutions, int *solution_count) {
     //Implement the same logic as in part 1 to find all possible solutions
     //Return an array of solutions (each solution is an array of button indices)
-    if (goal_achieved(lights, goal)) {
-        //Found a solution
-        (*all_solutions) = realloc((*all_solutions), ((*solution_count) + 1) * sizeof(int *));
-        (*all_solutions)[*solution_count] = malloc(max_number_of_buttons * sizeof(int));
-        for (int i = 0; i < max_number_of_buttons; i++) {
-            (*all_solutions)[*solution_count][i] = current_solution[i];
-        }
-        (*solution_count)++;
-    }
-    else if (button_index >= max_number_of_buttons) {
+
+    if (button_index != 0 && (button_index >= max_number_of_buttons || buttons[button_index - 1][0] == -1)) {
         //not a solution
         return;
     }
-    else {
-        //Try without pressing the button
-        part_1(lights, goal, buttons, button_index + 1, current_solution, all_solutions, solution_count);
+    else if (goal_achieved(lights, goal)) {
+        if (!solution_exists((*all_solutions), (*solution_count), current_solution)) {
+            (*all_solutions) = realloc((*all_solutions), ((*solution_count) + 1) * sizeof(int *));
+            (*all_solutions)[*solution_count] = malloc(max_number_of_buttons * sizeof(int));
+            for (int i = 0; i < max_number_of_buttons; i++) {
+                (*all_solutions)[*solution_count][i] = current_solution[i];
+            }
+            (*solution_count)++;
+        }        
+    }
+    //Try without pressing the button
+    part_1(lights, goal, buttons, button_index + 1, current_solution, all_solutions, solution_count);
 
-        //Try pressing the button
-        //Toggle the lights
-        for (int i = 0; i < max_number_of_lights; i++) {
-            if (buttons[button_index][i] == -1) break;
-            int light_index = buttons[button_index][i];
-            lights[light_index] = (lights[light_index] == '.') ? '#' : '.';
-        }
-        current_solution[button_index] = 1;
-        part_1(lights, goal, buttons, button_index + 1, current_solution, all_solutions, solution_count);
-        current_solution[button_index] = 0;
-        //Toggle back the lights
-        for (int i = 0; i < max_number_of_lights; i++) {
-            if (buttons[button_index][i] == -1) break;
-            int light_index = buttons[button_index][i];
-            lights[light_index] = (lights[light_index] == '.') ? '#' : '.';
-        }
+    //Try pressing the button
+    //Toggle the lights
+    for (int i = 0; i < max_number_of_lights; i++) {
+        if (buttons[button_index][i] == -1) break;
+        int light_index = buttons[button_index][i];
+        lights[light_index] = (lights[light_index] == '.') ? '#' : '.';
+    }
+    current_solution[button_index] = 1;
+    part_1(lights, goal, buttons, button_index + 1, current_solution, all_solutions, solution_count);
+    current_solution[button_index] = 0;
+    //Toggle back the lights
+    for (int i = 0; i < max_number_of_lights; i++) {
+        if (buttons[button_index][i] == -1) break;
+        int light_index = buttons[button_index][i];
+        lights[light_index] = (lights[light_index] == '.') ? '#' : '.';
     }
 }
 
@@ -108,6 +124,7 @@ int goal_is_zero(short *goal) {
 
 int solve(short *goal, short **buttons, int button_count) {
     if (goal_is_zero(goal)) {
+        //printf("Goal is zero, returning 0\n");
         return 0;
     }
 
@@ -146,6 +163,7 @@ int solve(short *goal, short **buttons, int button_count) {
                 number_of_pressed_buttons++;
             }
         }
+
         //check that new_goal is valid (all values >=0)
         int valid = 1;
         for (int j = 0; j < max_number_of_lights; j++)
@@ -171,10 +189,8 @@ int solve(short *goal, short **buttons, int button_count) {
             continue;
         }
         results[i] = sol * 2 + number_of_pressed_buttons;
-        //printf("Result for solution %d: %d\n", i + 1, results[i]);
         free(new_goal);
     }
-    //printf("All results computed\n\n");
     //Find minimum result
     int min_result = 1000;
     for (int i = 0; i < solution_count; i++) {
