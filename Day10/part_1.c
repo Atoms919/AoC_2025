@@ -5,7 +5,7 @@
 
 short number_of_lines = 175;
 const short max_number_of_lights = 10;
-const short max_button_size = 20;
+const short max_number_of_buttons = 20;
 
 typedef struct {
     char *lights;
@@ -19,7 +19,7 @@ void show(char **goal, int goal_size, short ***buttons) {
             printf("%c", goal[i][j]);
         }
         printf("] ");
-        for (int j = 0; j < max_button_size; j++) {
+        for (int j = 0; j < max_number_of_buttons; j++) {
             if(buttons[i][j][0] != -1) printf("(", j);
             for (int k = 0; k < max_number_of_lights; k++) {
                 if (buttons[i][j][k] == -1) break;
@@ -65,7 +65,7 @@ long Day10(char **goal, int goal_size, short ***buttons) {
         light_switches[0].nb_of_switches = 0;
         while(!are_lights_in_light_switches(goal[i], light_switches, light_switch_count)) {
             for (int j = 0; j < light_switch_count; j++) {
-                for (int b = 0; b < max_button_size; b++) {
+                for (int b = 0; b < max_number_of_buttons; b++) {
                     if (light_switch_count >= light_switch_size) 
                     {
                         light_switch_size *= 2;
@@ -122,8 +122,8 @@ int main() {
 
     short ***buttons = malloc(number_of_lines * sizeof(short **));
     for (int i = 0; i < number_of_lines; i++) {
-        buttons[i] = malloc(max_button_size * sizeof(short *));
-        for (int j = 0; j < max_button_size; j++) {
+        buttons[i] = malloc(max_number_of_buttons * sizeof(short *));
+        for (int j = 0; j < max_number_of_buttons; j++) {
             buttons[i][j] = malloc(max_number_of_lights * sizeof(short));
             for (int k = 0; k < max_number_of_lights; k++) {
                 buttons[i][j][k] = -1;
@@ -140,8 +140,8 @@ int main() {
             goal = realloc(goal, (count) * sizeof(char *));
             goal_size_line = realloc(goal_size_line, (count) * sizeof(short));
             buttons = realloc(buttons, (count) * sizeof(short **));
-            buttons[count] = malloc(max_button_size * sizeof(short *));
-            for (int j = 0; j < max_button_size; j++) {
+            buttons[count] = malloc(max_number_of_buttons * sizeof(short *));
+            for (int j = 0; j < max_number_of_buttons; j++) {
                 buttons[count][j] = malloc(max_number_of_lights * sizeof(short));
             }
             goal_size_line[count] = 0;
@@ -203,7 +203,7 @@ int main() {
     // Free allocated memory
     for (int i = 0; i < count; i++) {
         free(goal[i]);
-        for (int j = 0; j < max_button_size; j++) {
+        for (int j = 0; j < max_number_of_buttons; j++) {
             free(buttons[i][j]);
         }
         free(buttons[i]);

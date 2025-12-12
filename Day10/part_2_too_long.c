@@ -51,6 +51,7 @@ int are_lights_in_light_clicks(short *lights, LightClick *light_clicks, int ligh
     return 0;
 }
 
+
 long Day10(short **goal, int goal_size, short ***buttons) {
     long result = 0;
     for (int i = 0; i < goal_size; i++) {
