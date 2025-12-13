@@ -18,7 +18,7 @@ void find_combinations(int current_lights, int goal, int *button_masks, int butt
     }
     find_combinations(current_lights, goal, button_masks, button_idx + 1, current_press_mask, max_buttons);
     if (button_masks[button_idx] != -1) {
-        find_combinations(current_lights ^ button_masks[button_idx], goal, button_masks, button_idx + 1, current_press_mask | (1 << button_idx), max_buttons);
+        find_combinations(current_lights ^ button_masks[button_idx], goal, button_masks, button_idx + 1, current_press_mask ^ (1 << button_idx), max_buttons);
     }
 }
 

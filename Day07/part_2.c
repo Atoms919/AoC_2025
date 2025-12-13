@@ -16,7 +16,6 @@ void afficher(long long **lines, int line_count, int line_length) {
 
 long long day7(long long **lines, int line_count, int line_length) {
     
-    
     for (int i = 0; i < line_count; i++) {
         for (int j = 0; j < line_length; j++) {
             if (lines[i][j] > 0) {
