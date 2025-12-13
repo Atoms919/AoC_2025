@@ -10,41 +10,84 @@ typedef struct {
     long x;
     long y;
     long z;
-    float distance_min;
     int index;
 } Position; 
 
+typedef struct {
+    int index_a;
+    int index_b;
+    float distance;
+} DistancePair;
+
+DistancePair* memo = NULL;
+int memo_size = 0;
+int memo_capacity = 0;
+
+void init_memo() {
+    memo_capacity = 1000;
+    memo_size = 0;
+    memo = malloc(memo_capacity * sizeof(DistancePair));
+}
+
+void free_memo() {
+    free(memo);
+    memo = NULL;
+    memo_size = 0;
+    memo_capacity = 0;
+}
+
+DistancePair pop() {
+    DistancePair top = {-1, -1, FLT_MAX};
+    if (memo_size > 0) {
+        top = memo[memo_size - 1];
+    }
+    return top;
+}
+
+void push(int index_a, int index_b, float distance) {
+    if (memo_size >= memo_capacity) {
+        memo_capacity += 1000;
+        memo = realloc(memo, memo_capacity * sizeof(DistancePair));
+    }
+    memo[memo_size].index_a = index_a;
+    memo[memo_size].index_b = index_b;
+    memo[memo_size].distance = distance;
+    memo_size++;
+}
+
 void min_distance(float** dist_matrix, int position_count, int* index_a, int* index_b) {
     float min_dist = FLT_MAX;
+    int i_min = 0;
+    int j_min = 0;
+
     *index_a = -1;
     *index_b = -1;
-    for (int i = 0; i < position_count; i++) {
-        for (int j = 0; j < i; j++) {
-            if (i != j && dist_matrix[i][j] < min_dist) {
+
+    if (memo_size > 0) {
+        DistancePair top = pop();
+        min_dist = top.distance;
+        i_min = top.index_a;
+        *index_a = top.index_a;
+        j_min = top.index_b;
+        *index_b = top.index_b;
+        memo_size--;
+    }
+    
+    for (int i = i_min; i < position_count; i++) {
+        for (int j = j_min; j < i; j++) {
+            if (dist_matrix[i][j] < min_dist) {
+                push(i, j, dist_matrix[i][j]);
+
                 min_dist = dist_matrix[i][j];
                 *index_a = i;
                 *index_b = j;
             }
         }
+        j_min = 0;
     }
-}
-
-float** all_distances(Position **pos, int position_count) {
-    float **dist_matrix = (float **)malloc(position_count * sizeof(float*));
-    for (int i = 0; i < position_count; i++) {
-        dist_matrix[i] = (float *)malloc(position_count * sizeof(float));
-        for (int j = 0; j < position_count; j++) {
-            if (i == j) {
-                dist_matrix[i][j] = FLT_MAX;
-            } else {
-                float dx = pos[i]->x - pos[j]->x;
-                float dy = pos[i]->y - pos[j]->y;
-                float dz = pos[i]->z - pos[j]->z;
-                dist_matrix[i][j] = sqrt((float)(dx*dx + dy*dy + dz*dz));
-            }
-        }
+    if (memo_size > 0) {
+        pop();
     }
-    return dist_matrix;
 }
 
 void order_groups_by_size(int** tab, int col, int* row) {
@@ -75,13 +118,28 @@ int findIndex(int** tab, int col, int* row, int index) {
 }
 
 long long day8(Position **positions, int position_count) {
+    init_memo();
+
     int** tab = (int**)malloc(sizeof(int*));
     tab[0] = (int*)malloc(2*sizeof(int));
     int col = 0;
     int *row = (int*)malloc(sizeof(int));
     row[0] = 0;
 
-    float** dist_matrix = all_distances(positions, position_count);
+    float **dist_matrix = (float **)malloc(position_count * sizeof(float*));
+    for (int i = 0; i < position_count; i++) {
+        dist_matrix[i] = (float *)malloc(position_count * sizeof(float));
+        for (int j = 0; j < position_count; j++) {
+            if (i == j) {
+                dist_matrix[i][j] = FLT_MAX;
+            } else {
+                float dx = positions[i]->x - positions[j]->x;
+                float dy = positions[i]->y - positions[j]->y;
+                float dz = positions[i]->z - positions[j]->z;
+                dist_matrix[i][j] = sqrt((float)(dx*dx + dy*dy + dz*dz));
+            }
+        }
+    }
 
     int index0 = 0;
     int index1 = 0;
@@ -89,11 +147,14 @@ long long day8(Position **positions, int position_count) {
     int index_col0 = -1;
     int index_col1 = -1;
 
-    int count = 0;
     int tot_grouped = 0;
-    while (tot_grouped < position_count || col != 1) {        
-        count++;
+    while (tot_grouped < position_count || col != 1) {  
         min_distance(dist_matrix, position_count, &index0, &index1);
+
+        if (index0 == -1 || index1 == -1) {
+            printf("No more edges found. Graph might be disconnected.\n");
+            break; 
+        }
 
         dist_matrix[index0][index1] = FLT_MAX;
         dist_matrix[index1][index0] = FLT_MAX;
@@ -160,23 +221,29 @@ long long day8(Position **positions, int position_count) {
 
     long long sum = (long long)positions[index0]->x * (long long)positions[index1]->x;
     
-    for (int i = 0; i < col; i++) {
-        free(tab[i]);
+    for (int i = 0; i <= col; i++) {
+        if (tab[i] != NULL) {
+            free(tab[i]);
+            tab[i] = NULL;
+        }
     }
     free(tab);
     tab = NULL;
 
     for (int i = 0; i < position_count; i++) {
-        free(dist_matrix[i]);
-        dist_matrix[i] = NULL;
+        if (dist_matrix[i] != NULL) {
+            free(dist_matrix[i]);
+            dist_matrix[i] = NULL;
+        }
     }
     free(dist_matrix);
     dist_matrix = NULL;
 
     free(row);
     row = NULL;
-
+    
     return sum;
+
 }
 
 int main() {
@@ -211,7 +278,6 @@ int main() {
             else if (i == 1) pos->y = val;
             else if (i == 2) pos->z = val;
         }
-        pos->distance_min = FLT_MAX;
         pos->index = line_count;
         positions = realloc(positions, (line_count + 1) * sizeof(Position*));
         positions[line_count] = pos;
@@ -219,15 +285,20 @@ int main() {
     }
 
     long long sum = day8(positions, line_count);
+    printf("Sum : %lld\n", sum);
 
     clock_t end_time = clock();
     double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("Execution time: %.6f seconds\n", time_taken);
 
-    for (int i = 0; i < line_count; i++) free(positions[i]);
+    for (int i = 0; i < line_count; i++) {
+        free(positions[i]);
+        positions[i] = NULL;
+    }
     free(positions);
+    positions = NULL;
     fclose(file);
-
-    printf("Total : %lld\n", sum);
+    free_memo();
     return 0;
 }
+

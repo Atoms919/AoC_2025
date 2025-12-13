@@ -2,45 +2,54 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 #include <time.h>
 
-long day4(char **lines, int line_count) {
+long day4(char **lines, int line_count, int i, int j, int **visited) {
     //printf("New iteration\n");
-    long sum = 0;
-    int line_width = strlen(lines[0]);
-    bool removed = false;
+    int sum = 0;
+    //printf("Visiting (%d, %d) : %c\n", i, j, lines[i][j]);
 
-    for (int i = 0; i < line_count; i++) {
-        char *line = lines[i];
-        for (int j = 0; j < strlen(line); j++) {
-            if (line[j] != '.') {
-                int adjacent_count = 0;
-                for (int di = -1; di <= 1; di++) {
-                    for (int dj = -1; dj <= 1; dj++) {
-                        if (di == 0 && dj == 0) continue; 
-                        
-                        int ni = i + di;
-                        int nj = j + dj;
-                        
-                        if (ni >= 0 && ni < line_count && nj >= 0 && nj < strlen(lines[ni])) {
-                            if (lines[ni][nj] != '.') {
-                                adjacent_count++;
-                            }
-                        }
-                    }
-                }
+    char *line = lines[i];
+    if (line[j] != '.') {
+        int adjacent_count = 0;
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                if (di == 0 && dj == 0) continue; 
                 
-                //printf("Tile at (%d, %d) = '%c': %d adjacent non-'.' tiles\n", i, j, line[j], adjacent_count);
-                if (adjacent_count < 4) {
-                    removed = true;
-                    line[j] = '.';
-                    sum ++;
+                int ni = i + di;
+                int nj = j + dj;
+                
+                if (ni >= 0 && ni < line_count && nj >= 0 && nj < strlen(lines[ni])) {
+                    if (lines[ni][nj] != '.') {
+                        adjacent_count++;
+                    }
                 }
             }
         }
+        
+        if (adjacent_count < 4) {
+            line[j] = '.';
+            sum ++;
+            for (int di = -1; di <= 1; di++) {
+                for (int dj = -1; dj <= 1; dj++) {
+                    if (di == 0 && dj == 0) continue; 
+                    
+                    int ni = i + di;
+                    int nj = j + dj;
+                    
+                    if (ni >= 0 && ni < line_count && nj >= 0 && nj < strlen(lines[ni])) {
+                        if (lines[ni][nj] != '.') {
+                            sum += day4(lines, line_count, ni, nj, visited);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            visited[i][j] = 1;
+        }
     }
-    if (removed) sum += day4(lines, line_count);
+    
     return sum;
 }
 
@@ -69,16 +78,28 @@ int main() {
         line_count++;
     }
 
-    printf("%ld\n", day4(lines, line_count));
+    int sum = 0;
+    int **visited = malloc(line_count * sizeof(int *));
+    for (int i = 0; i < line_count; i++) {
+        visited[i] = calloc(strlen(lines[i]), sizeof(int));
+    }
+    for (int i = 0; i < line_count; i++) {
+        for (int j = 0; j < strlen(lines[i]); j++) {
+            if (lines[i][j] != '.' && !visited[i][j]) {
+                sum += day4(lines, line_count, i, j, visited);
+            }
+        }
+    }
+    clock_t end = clock();
+    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("%ld\n", sum);
+    printf("Time taken: %f seconds\n", time_spent);
 
     for (int i = 0; i < line_count; i++) {
         free(lines[i]);
     }
 
     free(lines);
-    clock_t end = clock();
-    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Time taken: %f seconds\n", time_spent);
 
     fclose(file);
     return 0;

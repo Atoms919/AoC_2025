@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <math.h>
 #include <float.h>
+#include <time.h>
 
 typedef struct {   
     long x;
@@ -105,7 +106,7 @@ long day8(Position **positions, int position_count) {
     float** dist_matrix = all_distances(positions, position_count);
 
     for (int _ = 0; _ < 1000; _++) {
-        printf("Iteration %d/1000\n", _);
+        //printf("Iteration %d/1000\n", _);
         IndexPair pair = min_distance(dist_matrix, position_count);
         int index0 = pair.index_a;
         int index1 = pair.index_b;
@@ -216,6 +217,8 @@ int main() {
         return 1;
     }
 
+    clock_t start_time = clock();
+
     char line[1024];
 
     Position **positions = (Position **)malloc(1 * sizeof(Position*));
@@ -249,6 +252,10 @@ int main() {
     }
 
     long sum = day8(positions, line_count);
+
+    clock_t end_time = clock();
+    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("Time taken: %.6f seconds\n", time_spent);
 
     for (int i = 0; i < line_count; i++) free(positions[i]);
     free(positions);

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <windows.h>
+#include <time.h>
 
 typedef struct {   
     long x;
@@ -246,10 +246,8 @@ int main() {
 
     char line[1024];
 
-    LARGE_INTEGER frequency, start_time, end_time;
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&start_time);
-
+    clock_t start_time = clock(); 
+    
     Position *positions = (Position *)malloc(500 * sizeof(Position));
     int size = 500;
 
@@ -282,9 +280,9 @@ int main() {
     long long biggest_area = day9(positions, line_count);
     printf("Biggest Area : %lld\n", biggest_area);
 
-    QueryPerformanceCounter(&end_time);
-    double elapsed_time = (double)(end_time.QuadPart - start_time.QuadPart) / frequency.QuadPart;
-    printf("Time taken: %.6f seconds\n", elapsed_time);
+    clock_t end_time = clock();
+    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("Time taken: %.6f seconds\n", time_spent);
     
     free(positions);
     fclose(file);

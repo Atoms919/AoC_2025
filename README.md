@@ -5,3 +5,6 @@ https://adventofcode.com/2025
 - Add file input.txt in each day and put your input
 - Compile : cd DayX; gcc -o part_Y part_Y.c (Replace X and Y)
 - Run : cd DayX; ./part_Y (Replace X and Y)
+
+## Benchmark
+- After adding all inputs you can compile and run run_all_days.c to see all the times

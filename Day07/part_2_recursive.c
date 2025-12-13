@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <windows.h>
+#include <time.h>
 
 long long **memo = NULL;
 int memo_rows = 0;
@@ -52,9 +52,7 @@ int main() {
         return 1;
     }
 
-    LARGE_INTEGER frequency, start_time, end_time;
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&start_time);
+    clock_t start_time = clock();
 
     char line[1024];
     char **lines = NULL;
@@ -92,10 +90,11 @@ int main() {
         }
     }
     printf("%lld\n", result);
-    QueryPerformanceCounter(&end_time);
-    double time_spent = (double)(end_time.QuadPart - start_time.QuadPart) / frequency.QuadPart;
+    
+    clock_t end_time = clock();
+    double time_spent = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("Time taken: %.6f seconds\n", time_spent);
-    // Free memoization table
+    
     for (int i = 0; i < memo_rows; i++) {
         free(memo[i]);
     }
